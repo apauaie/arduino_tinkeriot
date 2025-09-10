@@ -80,14 +80,24 @@ TinkerIoTClass::TinkerIoTClass() {
     #endif
 }
 
-
-
 void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char* password, const char* server, int port) {
     device_token = String(auth_token);
     wifi_ssid = String(ssid);
     wifi_password = String(password);
     server_host = server;
     server_port = port;
+
+    if ( port == 8443) {
+        use_ssl = true;
+        #ifdef TINKERIOT_PRINT
+        Serial.printf("🔒 SSL enabled (port %d)\n", port);
+        #endif
+    } else {
+        use_ssl = false;
+        #ifdef TINKERIOT_PRINT
+        Serial.printf("🔓 SSL disabled (port %d)\n", port);
+        #endif
+    }
     
     #ifdef TINKERIOT_PRINT
     TINKERIOT_PRINT.begin(9600);

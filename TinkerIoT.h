@@ -269,9 +269,9 @@ private:
     bool tokenErrorReported = false;    // Track if token error was already reported
     
     // Server configuration - OPTIMIZED for dynamic assignment
-    const char* server_host = "tinkercode.my";  // Change this to the server ip
-    int server_port = 8443;                     // Removed const to allow modification
-    bool use_ssl = false;                        // Removed const to allow modification
+    const char* server_host = "10.161.42.200";  // Change this to the server ip
+    int server_port = 8008;                     // Removed const to allow modification
+    bool use_ssl = true;                        // Removed const to allow modification
     
     // Device credentials
     String device_token;
