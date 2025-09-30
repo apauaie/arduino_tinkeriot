@@ -97,13 +97,15 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
         #ifdef TINKERIOT_PRINT
         Serial.print("🔒 SSL enabled (port ");
         Serial.print(port);
-        Serial.println(")");        #endif
+        Serial.println(")");        
+        #endif
     } else {
         use_ssl = false;
         #ifdef TINKERIOT_PRINT
         Serial.print("🔒 SSL disabled (port ");
         Serial.print(port);
-        Serial.println(")");        #endif
+        Serial.println(")");        
+        #endif
     }
     
     #ifdef TINKERIOT_PRINT
@@ -170,7 +172,8 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
     if (pin < 0 || pin >= 32) {
         #ifdef TINKERIOT_DATA_DEBUG
         TINKERIOT_DATA_DEBUG.print("❌ Invalid pin number: ");
-        TINKERIOT_DATA_DEBUG.println(pin);        #endif
+        TINKERIOT_DATA_DEBUG.println(pin);        
+        #endif
         return;
     }
     
@@ -198,7 +201,8 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
         TINKERIOT_DATA_DEBUG.print("⏳ Waiting for connection to stabilize before sending C");
         TINKERIOT_DATA_DEBUG.print(pin);
         TINKERIOT_DATA_DEBUG.print("=");
-        TINKERIOT_DATA_DEBUG.println(value);        #endif
+        TINKERIOT_DATA_DEBUG.println(value);        
+        #endif
         return;
     }
     
@@ -218,7 +222,8 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
     TINKERIOT_DATA_DEBUG.print(pin);
     TINKERIOT_DATA_DEBUG.print(" = '");
     TINKERIOT_DATA_DEBUG.print(value);
-    TINKERIOT_DATA_DEBUG.println("'");    #endif
+    TINKERIOT_DATA_DEBUG.println("'");    
+    #endif
     sendHardwareMessage(0, command);
     
     // REMOVED: delay(50) - this was causing slow responses!
@@ -297,13 +302,13 @@ void TinkerIoTClass::setupWebSocket() {
     
     if (use_ssl) {
         // For Nano 33 IoT with WiFiNINA, this should work
-        webSocket.beginSSL(server_host, server_port, websocket_path);
+        webSocket.beginSSL(server_host, server_port, websocket_path.c_str());
         
         // Optional: Disable SSL certificate verification if needed
         // webSocket.setSSLClientCertKey(...); // For client certificates
         
     } else {
-        webSocket.begin(server_host, server_port, websocket_path);
+        webSocket.begin(server_host, server_port, websocket_path.c_str());
     }
     
     webSocket.onEvent(webSocketEventStatic);
@@ -380,7 +385,8 @@ void TinkerIoTClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t len
             #ifdef TINKERIOT_DATA_DEBUG
             TINKERIOT_DATA_DEBUG.print("📨 Received binary message (");
             TINKERIOT_DATA_DEBUG.print(length);
-            TINKERIOT_DATA_DEBUG.println(" bytes)");            #endif
+            TINKERIOT_DATA_DEBUG.println(" bytes)");            
+            #endif
             handleTinkerIoTMessage(payload, length);
             break;
             
@@ -401,7 +407,8 @@ void TinkerIoTClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t len
         default:
             #ifdef TINKERIOT_DATA_DEBUG
             TINKERIOT_DATA_DEBUG.print("🤔 Unknown WebSocket event: ");
-            TINKERIOT_DATA_DEBUG.println(type);            #endif
+            TINKERIOT_DATA_DEBUG.println(type);            
+            #endif
             break;
     }
 }
