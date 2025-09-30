@@ -1,7 +1,22 @@
 #ifndef TINKERIOT_H
 #define TINKERIOT_H
 
-#include <WiFi.h>
+// Board detection and compatibility layer
+#if defined(ESP32)
+  #include <WiFi.h>
+  #define TINKERIOT_BOARD "ESP32"
+#elif defined(ARDUINO_SAMD_NANO_33_IOT)
+  #include <WiFiNINA.h>
+  #define TINKERIOT_BOARD "Nano33IoT"
+
+#elif defined(ARDUINO_SAMD_MKRWIFI1010)
+  #include <WiFiNINA.h>
+  #define TINKERIOT_BOARD "MKRWiFi1010"
+#else
+  #error "Unsupported board! This library supports ESP32 and Arduino Nano 33 IoT"
+#endif
+
+
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 
@@ -128,7 +143,9 @@ public:
         handlerList = newNode;
         
         #ifdef TINKERIOT_PRINT
-        Serial.printf("📝 Handler for C%d queued for auto-registration\n", pin);
+        TINKERIOT_PRINT.print("📝 Handler for C");
+        TINKERIOT_PRINT.print(pin);
+        TINKERIOT_PRINT.println(" queued for auto-registration");
         #endif
     }
     
@@ -166,7 +183,11 @@ private:
         bool enabled;
     };
     
-    static const int MAX_TIMERS = 16;
+    #if defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
+        static const int MAX_TIMERS = 8;  // Reduce for SAMD boards
+    #else
+        static const int MAX_TIMERS = 16;
+    #endif
     TimerItem timers[MAX_TIMERS];
     int timerCount;
     
