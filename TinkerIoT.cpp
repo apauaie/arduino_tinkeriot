@@ -28,7 +28,9 @@ void TinkerIoTAutoRegister::registerAll() {
             registeredCount++;
             
             #ifdef TINKERIOT_PRINT
-            TINKERIOT_PRINT.printf("✅ Auto-registered C%d handler\n", current->pin);
+            TINKERIOT_PRINT.print("✅ Auto-registered C");
+            TINKERIOT_PRINT.print(current->pin);
+            TINKERIOT_PRINT.println(" handler");
             #endif
         }
         current = current->next;
@@ -36,7 +38,9 @@ void TinkerIoTAutoRegister::registerAll() {
     
     #ifdef TINKERIOT_PRINT
     if (registeredCount > 0) {
-        TINKERIOT_PRINT.printf("🎉 Auto-registered %d handlers successfully!\n", registeredCount);
+        TINKERIOT_PRINT.print("🎉 Auto-registered ");
+        TINKERIOT_PRINT.print(registeredCount);
+        TINKERIOT_PRINT.println(" handlers successfully!");
         TINKERIOT_PRINT.println("✅ All handlers auto-registered - no ATTACH needed!");
     } else {
         TINKERIOT_PRINT.println("ℹ️ No TINKERIOT_WRITE handlers found to register");
@@ -75,8 +79,9 @@ TinkerIoTClass::TinkerIoTClass() {
     // Show auto-registration info
     int pendingHandlers = TinkerIoTAutoRegister::getHandlerCount();
     if (pendingHandlers > 0) {
-        TINKERIOT_PRINT.printf("📋 TinkerIoT initialized - %d handlers ready for auto-registration\n", pendingHandlers);
-    }
+    TINKERIOT_PRINT.print("📋 TinkerIoT initialized - ");
+    TINKERIOT_PRINT.print(pendingHandlers);
+    TINKERIOT_PRINT.println(" handlers ready for auto-registration");    }
     #endif
 }
 
@@ -90,13 +95,15 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
     if ( port == 8443) {
         use_ssl = true;
         #ifdef TINKERIOT_PRINT
-        Serial.printf("🔒 SSL enabled (port %d)\n", port);
-        #endif
+        Serial.print("🔒 SSL enabled (port ");
+        Serial.print(port);
+        Serial.println(")");        #endif
     } else {
         use_ssl = false;
         #ifdef TINKERIOT_PRINT
-        Serial.printf("🔓 SSL disabled (port %d)\n", port);
-        #endif
+        Serial.print("🔒 SSL disabled (port ");
+        Serial.print(port);
+        Serial.println(")");        #endif
     }
     
     #ifdef TINKERIOT_PRINT
@@ -104,8 +111,8 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
     TINKERIOT_PRINT.println();
     TINKERIOT_PRINT.println("🚀 TinkerIoT ESP32 Client Starting...");
     TINKERIOT_PRINT.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    TINKERIOT_PRINT.printf("🔑 Testing token: %s\n", auth_token);
-    TINKERIOT_PRINT.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    TINKERIOT_PRINT.print("🔑 Testing token: ");
+    TINKERIOT_PRINT.println(auth_token);    TINKERIOT_PRINT.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     #endif
     
     connectToWiFi();
@@ -115,8 +122,9 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
     #ifdef TINKERIOT_PRINT
     int handlerCount = TinkerIoTAutoRegister::getHandlerCount();
     if (handlerCount > 0) {
-        TINKERIOT_PRINT.printf("🔄 Found %d TINKERIOT_WRITE handlers for auto-registration\n", handlerCount);
-    }
+    TINKERIOT_PRINT.print("🔄 Found ");
+    TINKERIOT_PRINT.print(handlerCount);
+    TINKERIOT_PRINT.println(" TINKERIOT_WRITE handlers for auto-registration");    }
     #endif
     
     TinkerIoTAutoRegister::registerAll();
@@ -161,19 +169,25 @@ void TinkerIoTClass::run() {
 void TinkerIoTClass::cloudWrite(int pin, String value) {
     if (pin < 0 || pin >= 32) {
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("❌ Invalid pin number: %d\n", pin);
-        #endif
+        TINKERIOT_DATA_DEBUG.print("❌ Invalid pin number: ");
+        TINKERIOT_DATA_DEBUG.println(pin);        #endif
         return;
     }
     
     // Enhanced connection check - protect against sending during login phase
     if (!isConnected || !loginSent || loginFailed) {
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("❌ Cannot send C%d=%s - connection not ready (connected:%s, login:%s, failed:%s)\n", 
-                                   pin, value.c_str(), 
-                                   isConnected ? "Y" : "N",
-                                   loginSent ? "Y" : "N", 
-                                   loginFailed ? "Y" : "N");
+        TINKERIOT_DATA_DEBUG.print("❌ Cannot send C");
+        TINKERIOT_DATA_DEBUG.print(pin);
+        TINKERIOT_DATA_DEBUG.print("=");
+        TINKERIOT_DATA_DEBUG.print(value);
+        TINKERIOT_DATA_DEBUG.print(" - connection not ready (connected:");
+        TINKERIOT_DATA_DEBUG.print(isConnected ? "Y" : "N");
+        TINKERIOT_DATA_DEBUG.print(", login:");
+        TINKERIOT_DATA_DEBUG.print(loginSent ? "Y" : "N");
+        TINKERIOT_DATA_DEBUG.print(", failed:");
+        TINKERIOT_DATA_DEBUG.print(loginFailed ? "Y" : "N");
+        TINKERIOT_DATA_DEBUG.println(")");
         #endif
         return;
     }
@@ -181,8 +195,10 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
     // Add small grace period after login to ensure connection stability
     if (loginSent && (millis() - loginAttemptTime) < 1000) {
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("⏳ Waiting for connection to stabilize before sending C%d=%s\n", pin, value.c_str());
-        #endif
+        TINKERIOT_DATA_DEBUG.print("⏳ Waiting for connection to stabilize before sending C");
+        TINKERIOT_DATA_DEBUG.print(pin);
+        TINKERIOT_DATA_DEBUG.print("=");
+        TINKERIOT_DATA_DEBUG.println(value);        #endif
         return;
     }
     
@@ -198,8 +214,11 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
     
     // Send to server
     #ifdef TINKERIOT_DATA_DEBUG
-    TINKERIOT_DATA_DEBUG.printf("📤 TinkerIoT.cloudWrite: C%d = '%s'\n", pin, value.c_str());
-    #endif
+    TINKERIOT_DATA_DEBUG.print("📤 TinkerIoT.cloudWrite: C");
+    TINKERIOT_DATA_DEBUG.print(pin);
+    TINKERIOT_DATA_DEBUG.print(" = '");
+    TINKERIOT_DATA_DEBUG.print(value);
+    TINKERIOT_DATA_DEBUG.println("'");    #endif
     sendHardwareMessage(0, command);
     
     // REMOVED: delay(50) - this was causing slow responses!
@@ -222,12 +241,14 @@ void TinkerIoTClass::_registerWriteHandler(int pin, TinkerIoTWriteHandler handle
     if (pin >= 0 && pin < 32) {
         writeHandlers[pin] = handler;
         #ifdef TINKERIOT_PRINT
-        TINKERIOT_PRINT.printf("✅ Handler registered for C%d\n", pin);
+        TINKERIOT_PRINT.print("✅ Handler registered for C");
+        TINKERIOT_PRINT.println(pin);        
         #endif
     } else {
         #ifdef TINKERIOT_PRINT
-        TINKERIOT_PRINT.printf("❌ Invalid pin number for handler: %d\n", pin);
-        #endif
+        TINKERIOT_PRINT.print("❌ Invalid pin number for handler: ");
+        TINKERIOT_PRINT.println(pin);       
+         #endif
     }
 }
 
@@ -236,6 +257,17 @@ void TinkerIoTClass::connectToWiFi() {
     #ifdef TINKERIOT_PRINT
     TINKERIOT_PRINT.print("📶 Connecting to WiFi: ");
     TINKERIOT_PRINT.println(wifi_ssid);
+    #endif
+    
+    // Nano 33 IoT WiFi initialization
+    #if defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
+    // Check for WiFi module
+    if (WiFi.status() == WL_NO_MODULE) {
+        #ifdef TINKERIOT_PRINT
+        TINKERIOT_PRINT.println("❌ WiFi module not found!");
+        #endif
+        while (true); // Don't continue
+    }
     #endif
     
     WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
@@ -264,7 +296,12 @@ void TinkerIoTClass::setupWebSocket() {
     #endif
     
     if (use_ssl) {
+        // For Nano 33 IoT with WiFiNINA, this should work
         webSocket.beginSSL(server_host, server_port, websocket_path);
+        
+        // Optional: Disable SSL certificate verification if needed
+        // webSocket.setSSLClientCertKey(...); // For client certificates
+        
     } else {
         webSocket.begin(server_host, server_port, websocket_path);
     }
@@ -315,7 +352,9 @@ void TinkerIoTClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t len
                 } else {
                     // Show limited disconnection messages
                     #ifdef TINKERIOT_PRINT
-                    TINKERIOT_PRINT.printf("🔄 Connection attempt %d failed, retrying...\n", connectionFailureCount);
+                    TINKERIOT_PRINT.print("🔄 Connection attempt ");
+                    TINKERIOT_PRINT.print(connectionFailureCount);
+                    TINKERIOT_PRINT.println(" failed, retrying...");
                     #endif
                 }
             }
@@ -327,7 +366,8 @@ void TinkerIoTClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t len
             
         case WStype_CONNECTED:
             #ifdef TINKERIOT_PRINT
-            TINKERIOT_PRINT.printf("✅ WebSocket Connected to: %s\n", payload);
+            TINKERIOT_PRINT.print("✅ WebSocket Connected to: ");
+            TINKERIOT_PRINT.println((char*)payload);            
             #endif
             isConnected = true;
             loginFailed = false;
@@ -338,27 +378,30 @@ void TinkerIoTClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t len
             
         case WStype_BIN:
             #ifdef TINKERIOT_DATA_DEBUG
-            TINKERIOT_DATA_DEBUG.printf("📨 Received binary message (%d bytes)\n", length);
-            #endif
+            TINKERIOT_DATA_DEBUG.print("📨 Received binary message (");
+            TINKERIOT_DATA_DEBUG.print(length);
+            TINKERIOT_DATA_DEBUG.println(" bytes)");            #endif
             handleTinkerIoTMessage(payload, length);
             break;
             
         case WStype_TEXT:
             #ifdef TINKERIOT_DATA_DEBUG
-            TINKERIOT_DATA_DEBUG.printf("📨 Received text message: %s\n", payload);
+            TINKERIOT_DATA_DEBUG.print("📨 Received text message: ");
+            TINKERIOT_DATA_DEBUG.println((char*)payload);
             #endif
             break;
             
         case WStype_ERROR:
             #ifdef TINKERIOT_PRINT
-            TINKERIOT_PRINT.printf("❌ WebSocket Error: %s\n", payload);
+            TINKERIOT_PRINT.print("❌ WebSocket Error: ");
+            TINKERIOT_PRINT.println((char*)payload);            
             #endif
             break;
             
         default:
             #ifdef TINKERIOT_DATA_DEBUG
-            TINKERIOT_DATA_DEBUG.printf("🤔 Unknown WebSocket event: %d\n", type);
-            #endif
+            TINKERIOT_DATA_DEBUG.print("🤔 Unknown WebSocket event: ");
+            TINKERIOT_DATA_DEBUG.println(type);            #endif
             break;
     }
 }
@@ -377,7 +420,12 @@ void TinkerIoTClass::handleTinkerIoTMessage(uint8_t* data, size_t length) {
     uint16_t body_length = (data[3] << 8) | data[4];
     
     #ifdef TINKERIOT_DATA_DEBUG
-    TINKERIOT_DATA_DEBUG.printf("📋 CMD: %d, ID: %d, LEN: %d\n", command, msg_id, body_length);
+    TINKERIOT_DATA_DEBUG.print("📋 CMD: ");
+    TINKERIOT_DATA_DEBUG.print(command);
+    TINKERIOT_DATA_DEBUG.print(", ID: ");
+    TINKERIOT_DATA_DEBUG.print(msg_id);
+    TINKERIOT_DATA_DEBUG.print(", LEN: ");
+    TINKERIOT_DATA_DEBUG.println(body_length);    
     #endif
     
     switch (command) {
@@ -399,8 +447,11 @@ void TinkerIoTClass::handleTinkerIoTMessage(uint8_t* data, size_t length) {
                 uint8_t status = data[5];
                 
                 #ifdef TINKERIOT_DATA_DEBUG
-                TINKERIOT_DATA_DEBUG.printf("📬 Response: %s (%d)\n", 
-                    status == SUCCESS ? "SUCCESS" : "ERROR", status);
+                TINKERIOT_DATA_DEBUG.print("📬 Response: ");
+                TINKERIOT_DATA_DEBUG.print(status == SUCCESS ? "SUCCESS" : "ERROR");
+                TINKERIOT_DATA_DEBUG.print(" (");
+                TINKERIOT_DATA_DEBUG.print(status);
+                TINKERIOT_DATA_DEBUG.println(")");                    
                 #endif
                 
                 // Handle login response specifically
@@ -444,8 +495,9 @@ void TinkerIoTClass::handleTinkerIoTMessage(uint8_t* data, size_t length) {
                                 TINKERIOT_PRINT.println("💡 Wait before retrying connection.");
                                 break;
                             default:
-                                TINKERIOT_PRINT.printf("❓ ERROR: Authentication failed (Code: %d)\n", status);
-                                TINKERIOT_PRINT.println("💡 Contact support for assistance.");
+                            TINKERIOT_PRINT.print("❓ ERROR: Authentication failed (Code: ");
+                            TINKERIOT_PRINT.print(status);
+                            TINKERIOT_PRINT.println(")");                     TINKERIOT_PRINT.println("💡 Contact support for assistance.");
                                 break;
                         }
                         
@@ -464,7 +516,8 @@ void TinkerIoTClass::handleTinkerIoTMessage(uint8_t* data, size_t length) {
             
         default:
             #ifdef TINKERIOT_DATA_DEBUG
-            TINKERIOT_DATA_DEBUG.printf("🤔 Unknown command: %d\n", command);
+            TINKERIOT_DATA_DEBUG.print("🤔 Unknown command: ");
+            TINKERIOT_DATA_DEBUG.println(command);            
             #endif
             break;
     }
@@ -478,7 +531,8 @@ void TinkerIoTClass::handleHardwareCommand(uint16_t msg_id, uint8_t* body, uint1
     }
     
     #ifdef TINKERIOT_DATA_DEBUG
-    TINKERIOT_DATA_DEBUG.printf("🔧 Hardware command: %s\n", command.c_str());
+    TINKERIOT_DATA_DEBUG.print("🔧 Hardware command: ");
+    TINKERIOT_DATA_DEBUG.println(command);    
     #endif
     
     int firstNull = command.indexOf('\0');
@@ -496,7 +550,10 @@ void TinkerIoTClass::handleHardwareCommand(uint16_t msg_id, uint8_t* body, uint1
         if (secondNull > 0) {
             String value = command.substring(secondNull + 1);
             #ifdef TINKERIOT_DATA_DEBUG
-            TINKERIOT_DATA_DEBUG.printf("📥 Cloud write: C%d = %s\n", pin, value.c_str());
+            TINKERIOT_DATA_DEBUG.print("📥 Cloud write: C");
+            TINKERIOT_DATA_DEBUG.print(pin);
+            TINKERIOT_DATA_DEBUG.print(" = ");
+            TINKERIOT_DATA_DEBUG.println(value);            
             #endif
             
             if (pin >= 0 && pin < 32) {
@@ -514,7 +571,10 @@ void TinkerIoTClass::handleHardwareCommand(uint16_t msg_id, uint8_t* body, uint1
         }
         
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("📤 Cloud read: C%d = %s\n", pin, value.c_str());
+        TINKERIOT_DATA_DEBUG.print("📤 Cloud read: C");
+        TINKERIOT_DATA_DEBUG.print(pin);
+        TINKERIOT_DATA_DEBUG.print(" = ");
+        TINKERIOT_DATA_DEBUG.println(value);        
         #endif
         
         String response = "cw\0" + String(pin) + "\0" + value;
@@ -526,7 +586,10 @@ void TinkerIoTClass::handleHardwareCommand(uint16_t msg_id, uint8_t* body, uint1
 void TinkerIoTClass::cloudRead(int pin, String value) {
     if (pin >= 0 && pin < 32 && writeHandlers[pin] != nullptr) {
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("📥 Calling TINKERIOT_WRITE(C%d) handler with value: %s\n", pin, value.c_str());
+        TINKERIOT_DATA_DEBUG.print("📥 Calling TINKERIOT_WRITE(C");
+        TINKERIOT_DATA_DEBUG.print(pin);
+        TINKERIOT_DATA_DEBUG.print(") handler with value: ");
+        TINKERIOT_DATA_DEBUG.println(value);        
         #endif
         
         // Update global param object
@@ -544,7 +607,10 @@ void TinkerIoTClass::cloudRead(int pin, String value) {
         }
     } else {
         #ifdef TINKERIOT_DATA_DEBUG
-        TINKERIOT_DATA_DEBUG.printf("🔧 No TINKERIOT_WRITE handler for pin C%d: %s\n", pin, value.c_str());
+        TINKERIOT_DATA_DEBUG.print("🔧 No TINKERIOT_WRITE handler for pin C");
+        TINKERIOT_DATA_DEBUG.print(pin);
+        TINKERIOT_DATA_DEBUG.print(": ");
+        TINKERIOT_DATA_DEBUG.println(value);        
         #endif
         
         if (pin >= 0 && pin < 32) {
@@ -604,7 +670,12 @@ void TinkerIoTClass::sendTinkerIoTMessage(uint8_t command, uint16_t msg_id, Stri
     }
     
     #ifdef TINKERIOT_DATA_DEBUG
-    TINKERIOT_DATA_DEBUG.printf("📤 Sending TinkerIoT message: CMD=%d, ID=%d, LEN=%d\n", command, msg_id, bodyLength);
+    TINKERIOT_DATA_DEBUG.print("📤 Sending TinkerIoT message: CMD=");
+    TINKERIOT_DATA_DEBUG.print(command);
+    TINKERIOT_DATA_DEBUG.print(", ID=");
+    TINKERIOT_DATA_DEBUG.print(msg_id);
+    TINKERIOT_DATA_DEBUG.print(", LEN=");
+    TINKERIOT_DATA_DEBUG.println(bodyLength);    
     #endif
     
     webSocket.sendBIN(message, 5 + bodyLength);
