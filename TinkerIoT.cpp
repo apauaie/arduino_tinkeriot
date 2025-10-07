@@ -75,14 +75,7 @@ TinkerIoTClass::TinkerIoTClass() {
     connectionFailureCount = 0;
     firstConnectionAttempt = 0;
     
-    #ifdef TINKERIOT_PRINT
-    // Show auto-registration info
-    int pendingHandlers = TinkerIoTAutoRegister::getHandlerCount();
-    if (pendingHandlers > 0) {
-    TINKERIOT_PRINT.print("📋 TinkerIoT initialized - ");
-    TINKERIOT_PRINT.print(pendingHandlers);
-    TINKERIOT_PRINT.println(" handlers ready for auto-registration");    }
-    #endif
+  
 }
 
 void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char* password, const char* server, int port) {
@@ -109,7 +102,6 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
     }
     
     #ifdef TINKERIOT_PRINT
-    TINKERIOT_PRINT.begin(9600);
     TINKERIOT_PRINT.println();
     TINKERIOT_PRINT.println("🚀 TinkerIoT ESP32 Client Starting...");
     TINKERIOT_PRINT.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -259,6 +251,11 @@ void TinkerIoTClass::_registerWriteHandler(int pin, TinkerIoTWriteHandler handle
 
 // WiFi connection
 void TinkerIoTClass::connectToWiFi() {
+    #if defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
+    while (!TINKERIOT_PRINT) {
+        3; // Wait for serial port
+      }
+    #endif
     #ifdef TINKERIOT_PRINT
     TINKERIOT_PRINT.print("📶 Connecting to WiFi: ");
     TINKERIOT_PRINT.println(wifi_ssid);
