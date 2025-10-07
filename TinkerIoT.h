@@ -142,11 +142,7 @@ public:
         newNode->next = handlerList;
         handlerList = newNode;
         
-        #ifdef TINKERIOT_PRINT
-        TINKERIOT_PRINT.print("📝 Handler for C");
-        TINKERIOT_PRINT.print(pin);
-        TINKERIOT_PRINT.println(" queued for auto-registration");
-        #endif
+ 
     }
     
     // Static method to register all queued handlers
@@ -156,7 +152,7 @@ public:
     static int getHandlerCount();
 };
 
-// Helper class for parameter access (similar to Blynk param)
+// Helper class for parameter access 
 class TinkerIoTParam {
 private:
     String _value;
@@ -173,7 +169,7 @@ public:
     void setValue(String value) { _value = value; }
 };
 
-// Timer class for TinkerIoT (similar to BlynkTimer)
+// Timer class for TinkerIoT
 class TinkerIoTTimer {
 private:
     struct TimerItem {
@@ -198,7 +194,7 @@ public:
         }
     }
     
-    // Set interval timer (Blynk-style) - AUTO-ENABLED BY DEFAULT
+    // Set interval timer  - AUTO-ENABLED BY DEFAULT
     int setInterval(unsigned long interval, TinkerIoTTimerCallback callback) {
         if (timerCount >= MAX_TIMERS) return -1;
         
@@ -356,10 +352,10 @@ public:
     void _registerWriteHandler(int pin, TinkerIoTWriteHandler handler);
 };
 
-// Global TinkerIoT object (similar to Blynk)
+// Global TinkerIoT object
 extern TinkerIoTClass TinkerIoT;
 
-// Global parameter object (similar to Blynk param)
+// Global parameter object
 extern TinkerIoTParam param;
 
 // ===== ENHANCED MACROS WITH AUTO-REGISTRATION =====
