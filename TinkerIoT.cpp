@@ -18,7 +18,7 @@ void TinkerIoTAutoRegister::registerAll() {
     
     #ifdef TINKERIOT_PRINT
     if (current != nullptr) {
-        TINKERIOT_PRINT.println("🔄 Auto-registering TINKERIOT_WRITE handlers...");
+        TINKERIOT_PRINT.println("🔄 Auto-registering TINKERIOT_WRITE handlers.....");
     }
     #endif
     
