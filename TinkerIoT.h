@@ -5,6 +5,9 @@
 #if defined(ESP32)
   #include <WiFi.h>
   #define TINKERIOT_BOARD "ESP32"
+#elif defined(ESP8266)
+  #include <ESP8266WiFi.h>
+  #define TINKERIOT_BOARD "ESP8266"
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
   #include <WiFiNINA.h>
   #define TINKERIOT_BOARD "Nano33IoT"
@@ -13,7 +16,7 @@
   #include <WiFiNINA.h>
   #define TINKERIOT_BOARD "MKRWiFi1010"
 #else
-  #error "Unsupported board! This library supports ESP32 and Arduino Nano 33 IoT"
+  #error "Unsupported board! This library supports ESP32, ESP8266, Arduino Nano 33 IoT, and MKR WiFi 1010"
 #endif
 
 
