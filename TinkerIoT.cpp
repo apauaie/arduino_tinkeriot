@@ -126,8 +126,14 @@ void TinkerIoTClass::begin(const char* auth_token, const char* ssid, const char*
 
 // Main run function (call this in loop)
 void TinkerIoTClass::run() {
-    webSocket.loop();
-    
+    // 🚀 PRIORITY FIX: Process incoming messages AGGRESSIVELY
+    // This ensures button commands are received instantly even during timer floods
+    // Call webSocket.loop() 10 times to drain incoming message queue
+    for (int i = 0; i < 10; i++) {
+        webSocket.loop();
+        yield();  // Let ESP32 process WiFi/system tasks
+    }
+
     // Automatic token validation - Check for login timeout
     if (isConnected && !loginSent && !loginFailed) {
         if (millis() - loginAttemptTime > loginTimeout) {
@@ -198,9 +204,11 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
         return;
     }
     
-    // Store locally first
+    // CRITICAL SECTION: Protect cloudPins[] array access
+    TINKERIOT_LOCK(cloudPinsMutex);
     cloudPins[pin] = value;
-    
+    TINKERIOT_UNLOCK(cloudPinsMutex);
+
     // Create command string with explicit null terminators
     String command = "cw";
     command += '\0';
@@ -217,8 +225,10 @@ void TinkerIoTClass::cloudWrite(int pin, String value) {
     TINKERIOT_DATA_DEBUG.println("'");    
     #endif
     sendHardwareMessage(0, command);
-    
-    // REMOVED: delay(50) - this was causing slow responses!
+
+    // PRIORITY FIX: Yield CPU to allow incoming widget commands to be processed
+    // This prevents sensor sends from blocking button commands
+    yield();
 }
 
 void TinkerIoTClass::cloudWrite(int pin, int value) {
@@ -561,17 +571,23 @@ void TinkerIoTClass::handleHardwareCommand(uint16_t msg_id, uint8_t* body, uint1
             #endif
             
             if (pin >= 0 && pin < 32) {
+                // CRITICAL SECTION: Protect cloudPins[] array access
+                TINKERIOT_LOCK(cloudPinsMutex);
                 cloudPins[pin] = value;
+                TINKERIOT_UNLOCK(cloudPinsMutex);
                 cloudRead(pin, value);
             }
         }
         sendResponse(msg_id, SUCCESS);
-        
+
     } else if (cmdType == "cr") {
         // Cloud read - server reading from device
         String value = "";
         if (pin >= 0 && pin < 32) {
+            // CRITICAL SECTION: Protect cloudPins[] array access
+            TINKERIOT_LOCK(cloudPinsMutex);
             value = cloudPins[pin];
+            TINKERIOT_UNLOCK(cloudPinsMutex);
         }
         
         #ifdef TINKERIOT_DATA_DEBUG
@@ -604,21 +620,27 @@ void TinkerIoTClass::cloudRead(int pin, String value) {
         
         // Echo the pin to send the value to dashboard
         cloudWrite(pin, value);
-        
+
         // Don't store control pin values for pins 0-10 to prevent echo
         if (pin > 10) {
+            // CRITICAL SECTION: Protect cloudPins[] array access
+            TINKERIOT_LOCK(cloudPinsMutex);
             cloudPins[pin] = value;
+            TINKERIOT_UNLOCK(cloudPinsMutex);
         }
     } else {
         #ifdef TINKERIOT_DATA_DEBUG
         TINKERIOT_DATA_DEBUG.print("🔧 No TINKERIOT_WRITE handler for pin C");
         TINKERIOT_DATA_DEBUG.print(pin);
         TINKERIOT_DATA_DEBUG.print(": ");
-        TINKERIOT_DATA_DEBUG.println(value);        
+        TINKERIOT_DATA_DEBUG.println(value);
         #endif
-        
+
         if (pin >= 0 && pin < 32) {
+            // CRITICAL SECTION: Protect cloudPins[] array access
+            TINKERIOT_LOCK(cloudPinsMutex);
             cloudPins[pin] = value;
+            TINKERIOT_UNLOCK(cloudPinsMutex);
         }
     }
 }
