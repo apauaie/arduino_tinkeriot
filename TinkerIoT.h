@@ -23,6 +23,42 @@
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 
+// ===== CROSS-PLATFORM MUTEX/CRITICAL SECTION =====
+// Protects cloudPins[] array from race conditions during concurrent access
+
+#if defined(ESP32)
+    // ESP32: Use FreeRTOS portMUX_TYPE for thread-safe operations
+    #define TINKERIOT_MUTEX_TYPE portMUX_TYPE
+    #define TINKERIOT_MUTEX_INIT portMUX_INITIALIZER_UNLOCKED
+    #define TINKERIOT_LOCK(mutex) portENTER_CRITICAL(&mutex)
+    #define TINKERIOT_UNLOCK(mutex) portEXIT_CRITICAL(&mutex)
+    #define TINKERIOT_HAS_FREERTOS 1
+
+#elif defined(ESP8266)
+    // ESP8266: Use interrupt disable/enable for critical sections
+    #define TINKERIOT_MUTEX_TYPE uint8_t
+    #define TINKERIOT_MUTEX_INIT 0
+    #define TINKERIOT_LOCK(mutex) noInterrupts()
+    #define TINKERIOT_UNLOCK(mutex) interrupts()
+    #define TINKERIOT_HAS_FREERTOS 0
+
+#elif defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
+    // Arduino SAMD (Nano IoT 33, MKR WiFi 1010): Use interrupt disable/enable
+    #define TINKERIOT_MUTEX_TYPE uint8_t
+    #define TINKERIOT_MUTEX_INIT 0
+    #define TINKERIOT_LOCK(mutex) noInterrupts()
+    #define TINKERIOT_UNLOCK(mutex) interrupts()
+    #define TINKERIOT_HAS_FREERTOS 0
+
+#else
+    // Generic Arduino: Use interrupt disable/enable as fallback
+    #define TINKERIOT_MUTEX_TYPE uint8_t
+    #define TINKERIOT_MUTEX_INIT 0
+    #define TINKERIOT_LOCK(mutex) noInterrupts()
+    #define TINKERIOT_UNLOCK(mutex) interrupts()
+    #define TINKERIOT_HAS_FREERTOS 0
+#endif
+
 // Debug output control - enable/disable separately for connection vs data
 #define TINKERIOT_PRINT Serial          // Connection debug (WiFi, WebSocket, Login)
 #define TINKERIOT_DATA_DEBUG Serial     // Data transmission debug (cloudWrite, messages, protocol)
@@ -300,7 +336,10 @@ private:
     
     // Cloud pins storage
     String cloudPins[32];
-    
+
+    // Mutex for protecting cloudPins[] array from race conditions
+    TINKERIOT_MUTEX_TYPE cloudPinsMutex = TINKERIOT_MUTEX_INIT;
+
     // Timing
     unsigned long lastHeartbeat = 0;
     const unsigned long heartbeatInterval = 5000;
